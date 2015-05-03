@@ -1,20 +1,23 @@
 namespace NServiceBus.Persistence.NHibernate
 {
+    using System.Collections.Concurrent;
     using global::NHibernate.Cfg;
     using global::NHibernate.Tool.hbm2ddl;
     using Installation;
 
     class Installer : INeedToInstallSomething
     {
-        public static bool RunInstaller { get; set; }
+        public static ConcurrentDictionary<string, bool> RunInstaller = new ConcurrentDictionary<string, bool>();
 
-        internal static Configuration configuration;
+        internal static ConcurrentDictionary<string, Configuration> configuration = new ConcurrentDictionary<string, Configuration>();
 
         public void Install(string identity, Configure config)
         {
-            if (RunInstaller)
+            bool runInstallerValue;
+            var localAddress = config.Settings.Get<string>("NServiceBus.LocalAddress");
+            if (RunInstaller.TryGetValue(localAddress, out runInstallerValue) && runInstallerValue)
             {
-                new SchemaUpdate(configuration).Execute(false, true);
+                new SchemaUpdate(configuration[localAddress]).Execute(false, true);
             }
         }
     }

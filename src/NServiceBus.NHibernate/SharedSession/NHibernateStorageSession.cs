@@ -76,8 +76,9 @@ namespace NServiceBus.Features
                     .ConfigureProperty(p => p.ConnectionString, connString);
             }
 
-            Installer.RunInstaller = context.Settings.Get<bool>("NHibernate.Common.AutoUpdateSchema");
-            Installer.configuration = configuration;
+            var localAddress = context.Settings.Get<string>("NServiceBus.LocalAddress");
+            Installer.RunInstaller.TryAdd(localAddress, context.Settings.Get<bool>("NHibernate.Common.AutoUpdateSchema"));
+            Installer.configuration.TryAdd(localAddress, configuration);
         }
     }
 }
